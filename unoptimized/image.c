@@ -195,7 +195,7 @@ int main (int argc, char *argv[])
 		}
 		for(i = 0; i < rowWidth; i = i+6){
 			rgb_pixel *in1 = rgb_pixel_init(line1, i);
-      //printf("RGB: (%d, %d, %d)\n", in1->r, in1->g, in1->b);
+      printf("RGB: (%d, %d, %d)\n", in1->r, in1->g, in1->b);
       rgb_pixel *in2 = rgb_pixel_init(line1, i+3);
       //printf("RGB: (%d, %d, %d)\n", in2->r, in2->g, in2->b);
       rgb_pixel *in3 = rgb_pixel_init(line2, i);
@@ -213,10 +213,10 @@ int main (int argc, char *argv[])
       //printf("YCC: (%f, %f, %f)\n", ycc4->y, ycc4->cb, ycc4->cr);
 
       ycc_pixel *yccd = downsample_ycc(ycc1, ycc2, ycc3, ycc4);
-      //printf("Downsampled YCC: (%f, %f, %f)\n", yccd->y, yccd->cb, yccd->cr);
+      printf("Downsampled YCC: (%f, %f, %f)\n", yccd->y, yccd->cb, yccd->cr);
 
       rgb_pixel *out = convert_to_rgb(yccd);
-      //printf("Downsampled RGB: (%d, %d, %d)\n", out->r, out->g, out->b);
+      printf("Downsampled RGB: (%d, %d, %d)\n", out->r, out->g, out->b);
       print_rgb_pixel(out, outFile);
 
       free(in1);
