@@ -67,8 +67,12 @@ typedef struct rgb_data {
 } rgb_data;
 
 typedef struct ycc_data {
-  ycc_pixel** data;
+  ycc_pixel* data;
 } ycc_data;
+
+typedef struct ycc_meta_data {
+  ycc_meta* data;
+} ycc_meta_data;
 
 bmp_header* bmp_init(FILE* fp){
 
@@ -123,7 +127,7 @@ print_rgb_pixel(rgb_pixel* pixel, FILE* out){
   fwrite(&pixel->b, sizeof(uint8_t), 1, out);
 }
 
-ycc_pixel* convert_to_ycc(rgb_pixel *in){
+ycc_pixel convert_to_ycc(rgb_pixel *in){
   ycc_pixel *out = malloc(sizeof(struct ycc_pixel));
   double conversion[3][3] = {65.481, 128.553, 24.966,-37.797, -74.203, 112.0,112.0, -93.786, -18.214};
   double in_array[3] = {((double)in->r)/255, ((double)in->g)/255, ((double)in->b)/255};
@@ -132,10 +136,10 @@ ycc_pixel* convert_to_ycc(rgb_pixel *in){
   out->cb = 128 + (conversion[1][0]*in_array[0] + conversion[1][1]*in_array[1] + conversion[1][2]*in_array[2]);
   out->cr = 128 + (conversion[2][0]*in_array[0] + conversion[2][1]*in_array[1] + conversion[2][2]*in_array[2]);
 
-  return out;
+  return *out;
 }
 
-ycc_meta* downsample_ycc(ycc_pixel *in1, ycc_pixel *in2, ycc_pixel *in3, ycc_pixel *in4){
+ycc_meta downsample_ycc(ycc_pixel *in1, ycc_pixel *in2, ycc_pixel *in3, ycc_pixel *in4){
   ycc_meta *out = malloc(sizeof(struct ycc_meta));
   out->y1  = in1->y;
   out->y2  = in2->y;
@@ -143,10 +147,10 @@ ycc_meta* downsample_ycc(ycc_pixel *in1, ycc_pixel *in2, ycc_pixel *in3, ycc_pix
   out->y4  = in4->y;
   out->cb = (in1->cb + in2->cb + in3->cb + in4->cb)/4;
   out->cr = (in1->cr + in2->cr + in3->cr + in4->cr)/4;
-  return out;
+  return *out;
 }
 
-ycc_array* upsample_ycc(ycc_meta* in){
+ycc_array upsample_ycc(ycc_meta* in){
   ycc_array *out = malloc(sizeof(struct ycc_array));
   out->p1.y = in->y1;
   out->p2.y = in->y2;
@@ -163,7 +167,7 @@ ycc_array* upsample_ycc(ycc_meta* in){
   out->p3.cr = in->cr;
   out->p4.cr = in->cr;
 
-  return out;
+  return *out;
 }
 
 int clip(float in){
@@ -176,26 +180,15 @@ int clip(float in){
   }
 }
 
-rgb_array* convert_to_rgb(ycc_array *in){
-  rgb_array *out = malloc(sizeof(struct rgb_array));
+rgb_pixel convert_to_rgb(ycc_pixel *in){
+  rgb_pixel *out = malloc(sizeof(struct rgb_pixel));
 
-  out->p1.r =  clip(1.164*(in->p1.y -16) + 1.596*(in->p1.cr - 128));
-  out->p1.g =  clip((1.164*(in->p1.y -16) - 0.813*(in->p1.cr - 128) - 0.391*(in->p1.cb - 128)));
-  out->p1.b =  clip((1.164*(in->p1.y -16) + 2.018*(in->p1.cb - 128)));
+  out->r =  clip(1.164*(in->y -16) + 1.596*(in->cr - 128));
+  out->g =  clip((1.164*(in->y -16) - 0.813*(in->cr - 128) - 0.391*(in->cb - 128)));
+  out->b =  clip((1.164*(in->y -16) + 2.018*(in->cb - 128)));
 
-  out->p2.r =  clip(1.164*(in->p2.y -16) + 1.596*(in->p2.cr - 128));
-  out->p2.g =  clip((1.164*(in->p2.y -16) - 0.813*(in->p2.cr - 128) - 0.391*(in->p2.cb - 128)));
-  out->p2.b =  clip((1.164*(in->p2.y -16) + 2.018*(in->p2.cb - 128)));
 
-  out->p3.r =  clip(1.164*(in->p1.y -16) + 1.596*(in->p1.cr - 128));
-  out->p3.g =  clip((1.164*(in->p1.y -16) - 0.813*(in->p1.cr - 128) - 0.391*(in->p1.cb - 128)));
-  out->p3.b =  clip((1.164*(in->p1.y -16) + 2.018*(in->p1.cb - 128)));
-
-  out->p4.r =  clip(1.164*(in->p1.y -16) + 1.596*(in->p1.cr - 128));
-  out->p4.g =  clip((1.164*(in->p1.y -16) - 0.813*(in->p1.cr - 128) - 0.391*(in->p1.cb - 128)));
-  out->p4.b =  clip((1.164*(in->p1.y -16) + 2.018*(in->p1.cb - 128)));
-
-  return out;
+  return *out;
 }
 
 rgb_data* rgb_to_ycc_to_rgb(rgb_data* inData, int height, int width){
@@ -203,46 +196,54 @@ rgb_data* rgb_to_ycc_to_rgb(rgb_data* inData, int height, int width){
   rgb_data* outData;
   outData = malloc(sizeof(rgb_data));
   outData->data = malloc(sizeof(rgb_pixel)*imageSize);
+
+  ycc_data* yccData;
+  yccData = malloc(sizeof(ycc_data));
+  yccData->data = malloc(sizeof(ycc_pixel)*imageSize);
+
+  ycc_meta_data* yccMetaData;
+  yccMetaData = malloc(sizeof(ycc_meta_data));
+  yccMetaData->data = malloc(sizeof(ycc_meta)*imageSize/4);
+
+  //Convert Each RGB to YCC
   int i,j;
-	for(j = 0; j < height; j = j+2){
-		for(i = 0; i < width; i = i+2){
+  for(j = 0; j < height; j = j+1){
+    for(i = 0; i < width; i = i+1){
       int offset = j*width;
-      ycc_pixel *ycc1 = convert_to_ycc(&inData->data[offset+i]);
-      //printf("YCC: (%f, %f, %f)\n", ycc1->y, ycc1->cb, ycc1->cr);
-      ycc_pixel *ycc2 = convert_to_ycc(&inData->data[offset+i+1]);
-      //printf("YCC: (%f, %f, %f)\n", ycc2->y, ycc2->cb, ycc2->cr);
-      ycc_pixel *ycc3 = convert_to_ycc(&inData->data[offset+i+width]);
-      //printf("YCC: (%f, %f, %f)\n", ycc3->y, ycc3->cb, ycc3->cr);
-      ycc_pixel *ycc4 = convert_to_ycc(&inData->data[offset+i+1+width]);
-      //printf("YCC: (%f, %f, %f)\n", ycc4->y, ycc4->cb, ycc4->cr);
+      yccData->data[offset+i] = convert_to_ycc(&inData->data[offset+i]);
+    }
+  }
 
-      ycc_meta *yccd = downsample_ycc(ycc1, ycc2, ycc3, ycc4);
-      //printf("Downsampled YCC: (%f, %f, %f, %f, %f, %f)\n", yccd->y1, yccd->y2, yccd->y3, yccd->y4, yccd->cb, yccd->cr);
+  //Convert 2x2 YCC to YCCmeta
+  for(j = 0; j < height/2; j++){
+    for(i = 0; i < width/2; i++){
+      int offset = j*width/2;
+      int tracer = j*width +i*2;
+      yccMetaData->data[offset+i] = downsample_ycc(&yccData->data[tracer], &yccData->data[tracer+1], &yccData->data[tracer+width], &yccData->data[tracer+1+width]);
+    }
+  }
 
-      ycc_array *ycca = upsample_ycc(yccd);
-      //printf("Upsampled YCC: (%f, %f, %f)\n", ycca->p1.y, ycca->p1.cb, ycca->p1.cr);
-      //printf("Upsampled YCC: (%f, %f, %f)\n", ycca->p2.y, ycca->p2.cb, ycca->p2.cr);
-      //printf("Upsampled YCC: (%f, %f, %f)\n", ycca->p3.y, ycca->p3.cb, ycca->p3.cr);
-      //printf("Upsampled YCC: (%f, %f, %f)\n", ycca->p4.y, ycca->p4.cb, ycca->p4.cr);
+  //Convert YCCmeta to 2x2 YCC
+  for(j = 0; j < height/2; j++){
+    for(i = 0; i < width/2; i++){
+      int offset = j*width/2;
+      int tracer = j*width +i*2;
+      ycc_array ycca = upsample_ycc(&yccMetaData->data[offset+i]);
+      yccData->data[tracer] = ycca.p1;
+      yccData->data[tracer+1] = ycca.p2;
+      yccData->data[tracer+width] = ycca.p3;
+      yccData->data[tracer+1+width] = ycca.p4;
+    }
+  }
 
-      rgb_array *out = convert_to_rgb(ycca);
-      //printf("Downsampled RGB: (%d, %d, %d)\n", out->p1.r, out->p1.g, out->p1.b);
-      //printf("Downsampled RGB: (%d, %d, %d)\n", out->p2.r, out->p2.g, out->p2.b);
-      //printf("Downsampled RGB: (%d, %d, %d)\n", out->p3.r, out->p3.g, out->p3.b);
-      //printf("Downsampled RGB: (%d, %d, %d)\n", out->p4.r, out->p4.g, out->p4.b);
-      outData->data[offset+i] = out->p1;
-      outData->data[offset+i+1] = out->p2;
-      outData->data[offset+i+width] = out->p3;
-      outData->data[offset+i+1+width] = out->p4;
+  //Convery Each YCC to RGB
+  for(j = 0; j < height; j = j+1){
+    for(i = 0; i < width; i = i+1){
+      int offset = j*width;
+      outData->data[offset+i] = convert_to_rgb(&yccData->data[offset+i]);
+    }
+  }
 
-      free(ycc1);
-      free(ycc2);
-      free(ycc3);
-      free(ycc4);
-      free(yccd);
-      free(ycca);
-		}
-	}
   return outData;
 }
 
