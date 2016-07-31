@@ -191,19 +191,12 @@ rgb_pixel convert_to_rgb(ycc_pixel *in){
   return *out;
 }
 
-rgb_data* rgb_to_ycc_to_rgb(rgb_data* inData, int height, int width){
+ycc_data* rgb_to_ycc(rgb_data* inData, int height, int width){
   int imageSize = height*width;
-  rgb_data* outData;
-  outData = malloc(sizeof(rgb_data));
-  outData->data = malloc(sizeof(rgb_pixel)*imageSize);
 
   ycc_data* yccData;
   yccData = malloc(sizeof(ycc_data));
   yccData->data = malloc(sizeof(ycc_pixel)*imageSize);
-
-  ycc_meta_data* yccMetaData;
-  yccMetaData = malloc(sizeof(ycc_meta_data));
-  yccMetaData->data = malloc(sizeof(ycc_meta)*imageSize/4);
 
   //Convert Each RGB to YCC
   int i,j;
@@ -213,38 +206,72 @@ rgb_data* rgb_to_ycc_to_rgb(rgb_data* inData, int height, int width){
       yccData->data[offset+i] = convert_to_ycc(&inData->data[offset+i]);
     }
   }
+  return yccData;
+}
 
+ycc_meta_data* ycc_to_meta(ycc_data* inData, int height, int width){
+  int imageSize = height*width;
+
+  ycc_meta_data* yccMetaData;
+  yccMetaData = malloc(sizeof(ycc_meta_data));
+  yccMetaData->data = malloc(sizeof(ycc_meta)*imageSize/4);
   //Convert 2x2 YCC to YCCmeta
+  int i,j;
   for(j = 0; j < height/2; j++){
     for(i = 0; i < width/2; i++){
       int offset = j*width/2;
-      int tracer = j*width +i*2;
-      yccMetaData->data[offset+i] = downsample_ycc(&yccData->data[tracer], &yccData->data[tracer+1], &yccData->data[tracer+width], &yccData->data[tracer+1+width]);
+      int tracer = j*2*width +i*2;
+      yccMetaData->data[offset+i] = downsample_ycc(&inData->data[tracer], &inData->data[tracer+1], &inData->data[tracer+width], &inData->data[tracer+1+width]);
     }
   }
+  return yccMetaData;
+}
 
+ycc_data* meta_to_ycc(ycc_meta_data* inData, int height, int width){
+  int imageSize = height*width;
+
+  ycc_data* yccData;
+  yccData = malloc(sizeof(ycc_data));
+  yccData->data = malloc(sizeof(ycc_pixel)*imageSize);
   //Convert YCCmeta to 2x2 YCC
+  int i,j;
   for(j = 0; j < height/2; j++){
     for(i = 0; i < width/2; i++){
       int offset = j*width/2;
-      int tracer = j*width +i*2;
-      ycc_array ycca = upsample_ycc(&yccMetaData->data[offset+i]);
+      int tracer = j*2*width +i*2;
+      ycc_array ycca = upsample_ycc(&inData->data[offset+i]);
       yccData->data[tracer] = ycca.p1;
       yccData->data[tracer+1] = ycca.p2;
       yccData->data[tracer+width] = ycca.p3;
       yccData->data[tracer+1+width] = ycca.p4;
     }
   }
+  return yccData;
+}
 
+
+rgb_data* ycc_to_rgb(ycc_data* inData, int height, int width){
+  int imageSize = height*width;
+
+  rgb_data* rgbData;
+  rgbData = malloc(sizeof(rgb_data));
+  rgbData->data = malloc(sizeof(rgb_pixel)*imageSize);
   //Convery Each YCC to RGB
+  int i,j;
   for(j = 0; j < height; j = j+1){
     for(i = 0; i < width; i = i+1){
       int offset = j*width;
-      outData->data[offset+i] = convert_to_rgb(&yccData->data[offset+i]);
+      rgbData->data[offset+i] = convert_to_rgb(&inData->data[offset+i]);
     }
   }
+  return rgbData;
+}
 
-  return outData;
+rgb_data* rgb_to_ycc_to_rgb(rgb_data* inData, int height, int width){
+    ycc_data* yccIn         = rgb_to_ycc(inData, height, width);
+    ycc_meta_data* yccMeta  = ycc_to_meta(yccIn, height, width);
+    ycc_data* yccOut        = meta_to_ycc(yccMeta, height, width);
+    return ycc_to_rgb(yccOut, height, width);
 }
 
 int main (int argc, char *argv[])
