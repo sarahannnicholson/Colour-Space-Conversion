@@ -1,0 +1,396 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 12.32      1.62     1.62                             mcount_internal
+ 10.19      2.96     1.34                             malloc
+  9.77      4.25     1.29   921600     0.00     0.00  convert_to_rgb
+  9.70      5.52     1.28                             fwrite
+  8.21      6.60     1.08   921600     0.00     0.00  convert_to_ycc
+  6.65      7.48     0.88                             __aeabi_ddiv
+  5.86      8.25     0.77                             __aeabi_dmul
+  4.68      8.86     0.62                             __adddf3
+  3.35      9.30     0.44  2764800     0.00     0.00  clip
+  2.24      9.60     0.30                             _int_malloc
+  2.09      9.87     0.28                             __floatdidf
+  2.05     10.14     0.27                             __aeabi_fcmpgt
+  1.98     10.40     0.26                             __gnu_mcount_nc
+  1.67     10.62     0.22                             memcpy
+  1.63     10.84     0.22   921600     0.00     0.00  print_rgb_pixel
+  1.56     11.04     0.21                             __aeabi_fadd
+  1.29     11.21     0.17                             __aeabi_cfcmple
+  1.25     11.38     0.17                             _IO_new_file_xsputn
+  1.06     11.52     0.14                             __aeabi_fcmplt
+  0.91     11.64     0.12   230400     0.00     0.00  downsample_ycc
+  0.91     11.76     0.12                             __aeabi_dsub
+  0.80     11.86     0.11                             __nesf2
+  0.80     11.97     0.11                             __extendsfdf2
+  0.80     12.07     0.11                             __floatsidf
+  0.76     12.17     0.10                             monstartup
+  0.61     12.25     0.08                             __aeabi_d2f
+  0.53     12.32     0.07                             __aeabi_f2uiz
+  0.53     12.39     0.07                             __aeabi_read_tp
+  0.53     12.46     0.07                             __libc_csu_init
+  0.49     12.53     0.07                             __subsf3
+  0.42     12.58     0.06                             __aeabi_ui2d
+  0.42     12.64     0.06                             fread
+  0.38     12.69     0.05        1     0.05     1.78  ycc_to_rgb
+  0.38     12.74     0.05                             __aeabi_frsub
+  0.30     12.78     0.04        1     0.04     3.29  main
+  0.30     12.82     0.04                             __aeabi_fcmpeq
+  0.30     12.86     0.04                             __aeabi_fcmpge
+  0.30     12.90     0.04                             mempcpy
+  0.27     12.93     0.04                             new_do_write
+  0.23     12.96     0.03   230400     0.00     0.00  upsample_ycc
+  0.23     12.99     0.03                             __lesf2
+  0.23     13.02     0.03                             calloc
+  0.19     13.05     0.03                             arena_get2
+  0.15     13.07     0.02        1     0.02     0.05  meta_to_ycc
+  0.15     13.09     0.02                             bcmp
+  0.15     13.11     0.02                             memmove
+  0.08     13.12     0.01        1     0.01     0.13  ycc_to_meta
+  0.08     13.13     0.01                             _wordcopy_fwd_dest_aligned
+  0.08     13.14     0.01                             write
+  0.04     13.14     0.01                             __aeabi_cfrcmple
+  0.04     13.15     0.01                             __divsf3
+  0.04     13.15     0.01                             __mulsf3
+  0.00     13.15     0.00        1     0.00     0.00  bmp_init
+  0.00     13.15     0.00        1     0.00     0.00  print_bmp_header
+  0.00     13.15     0.00        1     0.00     1.08  rgb_to_ycc
+  0.00     13.15     0.00        1     0.00     3.04  rgb_to_ycc_to_rgb
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 0.08% of 13.15 seconds
+
+index % time    self  children    called     name
+                0.04    3.25       1/1           __libc_start_main [2]
+[1]     25.0    0.04    3.25       1         main [1]
+                0.00    3.04       1/1           rgb_to_ycc_to_rgb [3]
+                0.22    0.00  921600/921600      print_rgb_pixel [20]
+                0.00    0.00       1/1           bmp_init [56]
+                0.00    0.00       1/1           print_bmp_header [57]
+-----------------------------------------------
+                                                 <spontaneous>
+[2]     25.0    0.00    3.29                 __libc_start_main [2]
+                0.04    3.25       1/1           main [1]
+-----------------------------------------------
+                0.00    3.04       1/1           main [1]
+[3]     23.1    0.00    3.04       1         rgb_to_ycc_to_rgb [3]
+                0.05    1.73       1/1           ycc_to_rgb [4]
+                0.00    1.08       1/1           rgb_to_ycc [10]
+                0.01    0.12       1/1           ycc_to_meta [25]
+                0.02    0.03       1/1           meta_to_ycc [39]
+-----------------------------------------------
+                0.05    1.73       1/1           rgb_to_ycc_to_rgb [3]
+[4]     13.5    0.05    1.73       1         ycc_to_rgb [4]
+                1.29    0.44  921600/921600      convert_to_rgb [5]
+-----------------------------------------------
+                1.29    0.44  921600/921600      ycc_to_rgb [4]
+[5]     13.1    1.29    0.44  921600         convert_to_rgb [5]
+                0.44    0.00 2764800/2764800     clip [14]
+-----------------------------------------------
+                                                 <spontaneous>
+[6]     12.3    1.62    0.00                 mcount_internal [6]
+-----------------------------------------------
+                                                 <spontaneous>
+[7]     10.2    1.34    0.00                 malloc [7]
+-----------------------------------------------
+                                                 <spontaneous>
+[8]      9.7    1.28    0.00                 fwrite [8]
+-----------------------------------------------
+                1.08    0.00  921600/921600      rgb_to_ycc [10]
+[9]      8.2    1.08    0.00  921600         convert_to_ycc [9]
+-----------------------------------------------
+                0.00    1.08       1/1           rgb_to_ycc_to_rgb [3]
+[10]     8.2    0.00    1.08       1         rgb_to_ycc [10]
+                1.08    0.00  921600/921600      convert_to_ycc [9]
+-----------------------------------------------
+                                                 <spontaneous>
+[11]     6.7    0.88    0.00                 __aeabi_ddiv [11]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     5.9    0.77    0.00                 __aeabi_dmul [12]
+-----------------------------------------------
+                                                 <spontaneous>
+[13]     4.7    0.62    0.00                 __adddf3 [13]
+-----------------------------------------------
+                0.44    0.00 2764800/2764800     convert_to_rgb [5]
+[14]     3.3    0.44    0.00 2764800         clip [14]
+-----------------------------------------------
+                                                 <spontaneous>
+[15]     2.2    0.30    0.00                 _int_malloc [15]
+-----------------------------------------------
+                                                 <spontaneous>
+[16]     2.1    0.28    0.00                 __floatdidf [16]
+-----------------------------------------------
+                                                 <spontaneous>
+[17]     2.1    0.27    0.00                 __aeabi_fcmpgt [17]
+-----------------------------------------------
+                                                 <spontaneous>
+[18]     2.0    0.26    0.00                 __gnu_mcount_nc [18]
+-----------------------------------------------
+                                                 <spontaneous>
+[19]     1.7    0.22    0.00                 memcpy [19]
+-----------------------------------------------
+                0.22    0.00  921600/921600      main [1]
+[20]     1.6    0.22    0.00  921600         print_rgb_pixel [20]
+-----------------------------------------------
+                                                 <spontaneous>
+[21]     1.6    0.21    0.00                 __aeabi_fadd [21]
+-----------------------------------------------
+                                                 <spontaneous>
+[22]     1.3    0.17    0.00                 __aeabi_cfcmple [22]
+-----------------------------------------------
+                                                 <spontaneous>
+[23]     1.3    0.17    0.00                 _IO_new_file_xsputn [23]
+-----------------------------------------------
+                                                 <spontaneous>
+[24]     1.1    0.14    0.00                 __aeabi_fcmplt [24]
+-----------------------------------------------
+                0.01    0.12       1/1           rgb_to_ycc_to_rgb [3]
+[25]     1.0    0.01    0.12       1         ycc_to_meta [25]
+                0.12    0.00  230400/230400      downsample_ycc [26]
+-----------------------------------------------
+                0.12    0.00  230400/230400      ycc_to_meta [25]
+[26]     0.9    0.12    0.00  230400         downsample_ycc [26]
+-----------------------------------------------
+                                                 <spontaneous>
+[27]     0.9    0.12    0.00                 __aeabi_dsub [27]
+-----------------------------------------------
+                                                 <spontaneous>
+[28]     0.8    0.11    0.00                 __nesf2 [28]
+-----------------------------------------------
+                                                 <spontaneous>
+[29]     0.8    0.11    0.00                 __extendsfdf2 [29]
+-----------------------------------------------
+                                                 <spontaneous>
+[30]     0.8    0.11    0.00                 __floatsidf [30]
+-----------------------------------------------
+                                                 <spontaneous>
+[31]     0.8    0.10    0.00                 monstartup [31]
+-----------------------------------------------
+                                                 <spontaneous>
+[32]     0.6    0.08    0.00                 __aeabi_d2f [32]
+-----------------------------------------------
+                                                 <spontaneous>
+[33]     0.5    0.07    0.00                 __aeabi_f2uiz [33]
+-----------------------------------------------
+                                                 <spontaneous>
+[34]     0.5    0.07    0.00                 __aeabi_read_tp [34]
+-----------------------------------------------
+                                                 <spontaneous>
+[35]     0.5    0.07    0.00                 __libc_csu_init [35]
+-----------------------------------------------
+                                                 <spontaneous>
+[36]     0.5    0.07    0.00                 __subsf3 [36]
+-----------------------------------------------
+                                                 <spontaneous>
+[37]     0.4    0.06    0.00                 fread [37]
+-----------------------------------------------
+                                                 <spontaneous>
+[38]     0.4    0.06    0.00                 __aeabi_ui2d [38]
+-----------------------------------------------
+                0.02    0.03       1/1           rgb_to_ycc_to_rgb [3]
+[39]     0.4    0.02    0.03       1         meta_to_ycc [39]
+                0.03    0.00  230400/230400      upsample_ycc [45]
+-----------------------------------------------
+                                                 <spontaneous>
+[40]     0.4    0.05    0.00                 __aeabi_frsub [40]
+-----------------------------------------------
+                                                 <spontaneous>
+[41]     0.3    0.04    0.00                 mempcpy [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[42]     0.3    0.04    0.00                 __aeabi_fcmpeq [42]
+-----------------------------------------------
+                                                 <spontaneous>
+[43]     0.3    0.04    0.00                 __aeabi_fcmpge [43]
+-----------------------------------------------
+                                                 <spontaneous>
+[44]     0.3    0.04    0.00                 new_do_write [44]
+-----------------------------------------------
+                0.03    0.00  230400/230400      meta_to_ycc [39]
+[45]     0.2    0.03    0.00  230400         upsample_ycc [45]
+-----------------------------------------------
+                                                 <spontaneous>
+[46]     0.2    0.03    0.00                 calloc [46]
+-----------------------------------------------
+                                                 <spontaneous>
+[47]     0.2    0.03    0.00                 __lesf2 [47]
+-----------------------------------------------
+                                                 <spontaneous>
+[48]     0.2    0.03    0.00                 arena_get2 [48]
+-----------------------------------------------
+                                                 <spontaneous>
+[49]     0.2    0.02    0.00                 bcmp [49]
+-----------------------------------------------
+                                                 <spontaneous>
+[50]     0.2    0.02    0.00                 memmove [50]
+-----------------------------------------------
+                                                 <spontaneous>
+[51]     0.1    0.01    0.00                 write [51]
+-----------------------------------------------
+                                                 <spontaneous>
+[52]     0.1    0.01    0.00                 _wordcopy_fwd_dest_aligned [52]
+-----------------------------------------------
+                                                 <spontaneous>
+[53]     0.0    0.01    0.00                 __aeabi_cfrcmple [53]
+-----------------------------------------------
+                                                 <spontaneous>
+[54]     0.0    0.01    0.00                 __divsf3 [54]
+-----------------------------------------------
+                                                 <spontaneous>
+[55]     0.0    0.01    0.00                 __mulsf3 [55]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[56]     0.0    0.00    0.00       1         bmp_init [56]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[57]     0.0    0.00    0.00       1         print_bmp_header [57]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [23] _IO_new_file_xsputn    [16] __floatdidf             [8] fwrite
+  [13] __adddf3               [30] __floatsidf             [1] main
+  [22] __aeabi_cfcmple        [18] __gnu_mcount_nc         [7] malloc
+  [53] __aeabi_cfrcmple       [47] __lesf2                 [6] mcount_internal
+  [32] __aeabi_d2f            [35] __libc_csu_init        [19] memcpy
+  [11] __aeabi_ddiv           [55] __mulsf3               [50] memmove
+  [12] __aeabi_dmul           [28] __nesf2                [41] mempcpy
+  [27] __aeabi_dsub           [36] __subsf3               [39] meta_to_ycc
+  [33] __aeabi_f2uiz          [15] _int_malloc            [31] monstartup
+  [21] __aeabi_fadd           [52] _wordcopy_fwd_dest_aligned [44] new_do_write
+  [42] __aeabi_fcmpeq         [48] arena_get2             [57] print_bmp_header
+  [43] __aeabi_fcmpge         [49] bcmp                   [20] print_rgb_pixel
+  [17] __aeabi_fcmpgt         [56] bmp_init               [10] rgb_to_ycc
+  [24] __aeabi_fcmplt         [46] calloc                  [3] rgb_to_ycc_to_rgb
+  [40] __aeabi_frsub          [14] clip                   [45] upsample_ycc
+  [34] __aeabi_read_tp         [5] convert_to_rgb         [51] write
+  [38] __aeabi_ui2d            [9] convert_to_ycc         [25] ycc_to_meta
+  [54] __divsf3               [26] downsample_ycc          [4] ycc_to_rgb
+  [29] __extendsfdf2          [37] fread

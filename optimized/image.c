@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
+
 typedef struct bmp_header {
   //File header
   uint16_t bfType;
@@ -47,20 +48,6 @@ typedef struct ycc_meta {
   uint8_t cb;
   uint8_t cr;
 } ycc_meta;
-
-typedef struct ycc_array {
-  struct ycc_pixel p1;
-  struct ycc_pixel p2;
-  struct ycc_pixel p3;
-  struct ycc_pixel p4;
-} ycc_array;
-
-typedef struct rgb_array {
-  struct rgb_pixel p1;
-  struct rgb_pixel p2;
-  struct rgb_pixel p3;
-  struct rgb_pixel p4;
-} rgb_array;
 
 typedef struct rgb_data {
   rgb_pixel* data;
@@ -120,61 +107,6 @@ void print_bmp_header(bmp_header* header, FILE* out){
 
 }
 
-void print_rgb_pixel(rgb_pixel* pixel, FILE* out){
-  fwrite(&pixel->r, sizeof(uint8_t), 1, out);
-  fwrite(&pixel->g, sizeof(uint8_t), 1, out);
-  fwrite(&pixel->b, sizeof(uint8_t), 1, out);
-}
-
-void convert_to_ycc(ycc_pixel *out, rgb_pixel *in){
-  out->y  = 16 +  ((int)( 16763*in->r +  32909*in->g +  6391*in->b) >> 16);
-  out->cb = 128 + ((int)( -9676*in->r + -18996*in->g + 28672*in->b) >> 16);
-  out->cr = 128 + ((int)( 28672*in->r + -24009*in->g + -4662*in->b) >> 16);
-  return;
-}
-
-void downsample_ycc(ycc_meta* out, ycc_pixel *in1, ycc_pixel *in2, ycc_pixel *in3, ycc_pixel *in4){
-  out->y1  = in1->y;
-  out->y2  = in2->y;
-  out->y3  = in3->y;
-  out->y4  = in4->y;
-  out->cb = (in1->cb + in2->cb + in3->cb + in4->cb) >> 2;
-  out->cr = (in1->cr + in2->cr + in3->cr + in4->cr) >> 2;
-  return;
-}
-
-ycc_array* upsample_ycc(ycc_meta* in){
-  ycc_array *out = malloc(sizeof(struct ycc_array));
-  out->p1.y = in->y1;
-  out->p2.y = in->y2;
-  out->p3.y = in->y3;
-  out->p4.y = in->y4;
-
-  out->p1.cb = in->cb;
-  out->p2.cb = in->cb;
-  out->p3.cb = in->cb;
-  out->p4.cb = in->cb;
-
-  out->p1.cr = in->cr;
-  out->p2.cr = in->cr;
-  out->p3.cr = in->cr;
-  out->p4.cr = in->cr;
-
-  return out;
-}
-
-void convert_to_rgb(rgb_pixel *out, ycc_pixel *in){
-
-  int r = (298*(in->y -16) + 409*(in->cr - 128)) >> 8;
-  int g = ((298*(in->y -16) - 208*(in->cr - 128) - 100*(in->cb - 128))) >> 8;
-  int b = ((298*(in->y -16) + 517*(in->cb - 128))) >> 8;
-  out->r = r > 255 ? 255 : (r < 0 ? 0 : r);
-  out->g = g > 255 ? 255 : (g < 0 ? 0 : g);
-  out->b = b > 255 ? 255 : (b < 0 ? 0 : b);
-
-  return;
-}
-
 ycc_data* rgb_to_ycc(rgb_data* inData, int height, int width){
   int imageSize = height*width;
 
@@ -183,12 +115,28 @@ ycc_data* rgb_to_ycc(rgb_data* inData, int height, int width){
   yccData->data = malloc(sizeof(ycc_pixel)*imageSize);
 
   //Convert Each RGB to YCC
-  int i,j;
-  for(j = 0; j < height; j = j+1){
-    for(i = 0; i < width; i = i+1){
-      int offset = j*width;
-      convert_to_ycc(&yccData->data[offset+i], &inData->data[offset+i]);
-    }
+  int j;
+  for(j = 0; j < imageSize; j+=4){
+    //If we have a 32 bit ALU and r,g,b are between 0-255 (2^8)
+    //and if addition adds at most 1 bit then each multiplication can use 32 bits
+    //then 24 bits remain for maximum percision
+    //The max int is 128.553 < 255 (2^8) .: scale factor is 2^16
+    yccData->data[j].y  = 16 +  (( 16763*inData->data[j].r +  32909*inData->data[j].g +  6391*inData->data[j].b) >> 16);
+    yccData->data[j].cb = 128 + (( -9676*inData->data[j].r + -18996*inData->data[j].g + 28672*inData->data[j].b) >> 16);
+    yccData->data[j].cr = 128 + (( 28672*inData->data[j].r + -24009*inData->data[j].g + -4662*inData->data[j].b) >> 16);
+
+    yccData->data[j+1].y  = 16 +  (( 16763*inData->data[j+1].r +  32909*inData->data[j+1].g +  6391*inData->data[j+1].b) >> 16);
+    yccData->data[j+1].cb = 128 + (( -9676*inData->data[j+1].r + -18996*inData->data[j+1].g + 28672*inData->data[j+1].b) >> 16);
+    yccData->data[j+1].cr = 128 + (( 28672*inData->data[j+1].r + -24009*inData->data[j+1].g + -4662*inData->data[j+1].b) >> 16);
+
+    yccData->data[j+2].y  = 16 +  (( 16763*inData->data[j+2].r +  32909*inData->data[j+2].g +  6391*inData->data[j+2].b) >> 16);
+    yccData->data[j+2].cb = 128 + (( -9676*inData->data[j+2].r + -18996*inData->data[j+2].g + 28672*inData->data[j+2].b) >> 16);
+    yccData->data[j+2].cr = 128 + (( 28672*inData->data[j+2].r + -24009*inData->data[j+2].g + -4662*inData->data[j+2].b) >> 16);
+
+    yccData->data[j+3].y  = 16 +  (( 16763*inData->data[j+3].r +  32909*inData->data[j+3].g +  6391*inData->data[j+3].b) >> 16);
+    yccData->data[j+3].cb = 128 + (( -9676*inData->data[j+3].r + -18996*inData->data[j+3].g + 28672*inData->data[j+3].b) >> 16);
+    yccData->data[j+3].cr = 128 + (( 28672*inData->data[j+3].r + -24009*inData->data[j+3].g + -4662*inData->data[j+3].b) >> 16);
+
   }
   return yccData;
 }
@@ -201,11 +149,16 @@ ycc_meta_data* ycc_to_meta(ycc_data* inData, int height, int width){
   yccMetaData->data = malloc(sizeof(ycc_meta)*imageSize/4);
   //Convert 2x2 YCC to YCCmeta
   int i,j;
-  for(j = 0; j < height/2; j++){
-    for(i = 0; i < width/2; i++){
-      int offset = j*width/2;
+  for(j = 0; j < height >> 1; j++){
+    int offset = j*width >> 1;
+    for(i = 0; i < width >> 1; i++){
       int tracer = j*2*width +i*2;
-      downsample_ycc(&yccMetaData->data[offset+i], &inData->data[tracer], &inData->data[tracer+1], &inData->data[tracer+width], &inData->data[tracer+1+width]);
+      yccMetaData->data[offset+i].y1  = inData->data[tracer].y;
+      yccMetaData->data[offset+i].y2  = inData->data[tracer+1].y;
+      yccMetaData->data[offset+i].y3  = inData->data[tracer+width].y;
+      yccMetaData->data[offset+i].y4  = inData->data[tracer+1+width].y;
+      yccMetaData->data[offset+i].cb = (inData->data[tracer].cb + inData->data[tracer+1].cb + inData->data[tracer+width].cb + inData->data[tracer+1+width].cb) >> 2;
+      yccMetaData->data[offset+i].cr = (inData->data[tracer].cr + inData->data[tracer+1].cr + inData->data[tracer+width].cr + inData->data[tracer+1+width].cr) >> 2;
     }
   }
   return yccMetaData;
@@ -219,16 +172,24 @@ ycc_data* meta_to_ycc(ycc_meta_data* inData, int height, int width){
   yccData->data = malloc(sizeof(ycc_pixel)*imageSize);
   //Convert YCCmeta to 2x2 YCC
   int i,j;
-  for(j = 0; j < height/2; j++){
-    for(i = 0; i < width/2; i++){
-      int offset = j*width/2;
+  for(j = 0; j < height >> 1; j++){
+    int offset = j*width/2;
+    for(i = 0; i < width >> 1; i++){
       int tracer = j*2*width +i*2;
-      ycc_array* ycca = upsample_ycc(&inData->data[offset+i]);
-      yccData->data[tracer] = ycca->p1;
-      yccData->data[tracer+1] = ycca->p2;
-      yccData->data[tracer+width] = ycca->p3;
-      yccData->data[tracer+1+width] = ycca->p4;
-      free(ycca);
+      yccData->data[tracer].y = inData->data[offset+i].y1;
+      yccData->data[tracer+1].y = inData->data[offset+i].y2;
+      yccData->data[tracer+width].y = inData->data[offset+i].y3;
+      yccData->data[tracer+1+width].y = inData->data[offset+i].y4;
+
+      yccData->data[tracer].cb = inData->data[offset+i].cb;
+      yccData->data[tracer+1].cb = inData->data[offset+i].cb;
+      yccData->data[tracer+width].cb = inData->data[offset+i].cb;
+      yccData->data[tracer+1+width].cb = inData->data[offset+i].cb;
+
+      yccData->data[tracer].cr = inData->data[offset+i].cr;
+      yccData->data[tracer+1].cr = inData->data[offset+i].cr;
+      yccData->data[tracer+width].cr = inData->data[offset+i].cr;
+      yccData->data[tracer+1+width].cr = inData->data[offset+i].cr;
     }
   }
   return yccData;
@@ -242,12 +203,46 @@ rgb_data* ycc_to_rgb(ycc_data* inData, int height, int width){
   rgbData = malloc(sizeof(rgb_data));
   rgbData->data = malloc(sizeof(rgb_pixel)*imageSize);
   //Convery Each YCC to RGB
-  int i,j;
-  for(j = 0; j < height; j = j+1){
-    for(i = 0; i < width; i = i+1){
-      int offset = j*width;
-      convert_to_rgb(&rgbData->data[offset+i], &inData->data[offset+i]);
-    }
+  int j;
+  for(j = 0; j < imageSize ; j += 4){
+    //Variable Folding
+    int y1 = 4882170*(inData->data[j].y -16);
+    //Largest multiplier is 2.018 < 4 2^2 - 2^8 = 32-10 = 22 bits scale
+    int r1 = (y1 + 6694109*(inData->data[j].cr - 128)) >> 22;
+    int g1 = ((y1 - 3409969*(inData->data[j].cr - 128) - 1639973*(inData->data[j].cb - 128))) >> 22;
+    int b1 = (y1 + 8464105*(inData->data[j].cb - 128)) >> 22;
+
+    rgbData->data[j].r = r1 > 255 ? 255 : (r1 < 0 ? 0 : r1);
+    rgbData->data[j].g = g1 > 255 ? 255 : (g1 < 0 ? 0 : g1);
+    rgbData->data[j].b = b1 > 255 ? 255 : (b1 < 0 ? 0 : b1);
+
+    int y2 = 4882170*(inData->data[j+1].y -16);
+    int r2 = (y2 + 6694109*(inData->data[j+1].cr - 128)) >> 22;
+    int g2 = ((y2 - 3409969*(inData->data[j+1].cr - 128) - 1639973*(inData->data[j+1].cb - 128))) >> 22;
+    int b2 = (y2 + 8464105*(inData->data[j+1].cb - 128)) >> 22;
+
+    rgbData->data[j+1].r = r2 > 255 ? 255 : (r2 < 0 ? 0 : r2);
+    rgbData->data[j+1].g = g2 > 255 ? 255 : (g2 < 0 ? 0 : g2);
+    rgbData->data[j+1].b = b2 > 255 ? 255 : (b2 < 0 ? 0 : b2);
+
+    int y3 = 4882170*(inData->data[j+2].y -16);
+    int r3 = (y3 + 6694109*(inData->data[j+2].cr - 128)) >> 22;
+    int g3 = ((y3 - 3409969*(inData->data[j+2].cr - 128) - 1639973*(inData->data[j+2].cb - 128))) >> 22;
+    int b3 = (y3 + 8464105*(inData->data[j+2].cb - 128)) >> 22;
+
+    rgbData->data[j+2].r = r3 > 255 ? 255 : (r3 < 0 ? 0 : r3);
+    rgbData->data[j+2].g = g3 > 255 ? 255 : (g3 < 0 ? 0 : g3);
+    rgbData->data[j+2].b = b3 > 255 ? 255 : (b3 < 0 ? 0 : b3);
+
+    int y4 = 4882170*(inData->data[j+3].y -16);
+    int r4 = (y4 + 6694109*(inData->data[j+3].cr - 128)) >> 22;
+    int g4 = ((y4 - 3409969*(inData->data[j+3].cr - 128) - 1639973*(inData->data[j+3].cb - 128))) >> 22;
+    int b4 = (y4 + 8464105*(inData->data[j+3].cb - 128)) >> 22;
+
+    rgbData->data[j+3].r = r4 > 255 ? 255 : (r4 < 0 ? 0 : r4);
+    rgbData->data[j+3].g = g4 > 255 ? 255 : (g4 < 0 ? 0 : g4);
+    rgbData->data[j+3].b = b4 > 255 ? 255 : (b4 < 0 ? 0 : b4);
+
   }
   return rgbData;
 }
@@ -270,7 +265,7 @@ int main (int argc, char *argv[])
     FILE * outFile;
 
     chdir("in");
-  	pFile = fopen ( argv[1] , "rb" );
+  	pFile = fopen (argv[1] , "rb" );
     chdir("..");
 
   	if (pFile==NULL) {
@@ -294,7 +289,7 @@ int main (int argc, char *argv[])
 	}
 
 	printf("Image is %d x %d \n", header->biWidth, header->biHeight);
-  printf("Offset is %d\n", header->bfOffBits);
+  //printf("Offset is %d\n", header->bfOffBits);
   fseek (pFile, header->bfOffBits, SEEK_SET);
 
   int imageSize = header->biHeight*header->biWidth;
@@ -302,7 +297,6 @@ int main (int argc, char *argv[])
   inData = malloc(sizeof(rgb_data));
   inData->data = malloc(sizeof(rgb_pixel)*imageSize);
 
-  printf("%d %d\n", header->biHeight,header->biWidth);
   fread(inData->data,sizeof(rgb_pixel),imageSize,pFile);
 
   rgb_data *outData;
@@ -313,11 +307,10 @@ int main (int argc, char *argv[])
   fseek (outFile, header->bfOffBits, SEEK_SET);
   int k;
   for(k = 0; k < imageSize; k ++){
-    print_rgb_pixel(&outData->data[k], outFile);
+    fwrite(&outData->data[k], sizeof(rgb_pixel), 1, outFile);
   }
 
   free(outData);
-
 
   fclose(outFile);
   fclose (pFile);
